@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="💎 TAHU BANK v7.3.1 - Sistem manajemen stok, distribusi, laba rugi & manajemen kekayaan otomatis untuk usaha tahu dan sotong. Tahu Kiri · Sotong Kanan">
+<meta name="keywords" content="Tahu Bank, sistem stok tahu, aplikasi sotong, manajemen usaha makanan, laba rugi otomatis, distribusi cabang">
+<meta name="version" content="7.3.1-RIJEK-2-KOLOM-FIX">
+<title>💎 TAHU BANK · v7.3.1 Tahu Kiri · Sotong Kanan</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5/build/qrcode.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+:root{
+    --bg:#F4F6FB;--surface:#FFFFFF;--text:#0F172A;--muted:#64748B;
+    --primary:#165DFF;--success:#00B42A;--danger:#F53F3F;--warning:#FF7D00;
+    --info:#14C9C9;--ungu:#722ED1;--emas:#D4A017;--rijek:#FFB020;--baru:#00B42A;--border:#E5E8EF;
+    --shadow:0 4px 20px rgba(15,23,42,.06);--card:0 10px 30px rgba(22,93,255,.08);
+}
+html.dark{--bg:#0B1020;--surface:#121A33;--text:#E6EDF7;--muted:#8A94A8;--border:#1E2A4A}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',system-ui,sans-serif}
+body{display:grid;grid-template-columns:260px 1fr;background:var(--bg);color:var(--text);min-height:100vh}
+
+#layarLogin{position:fixed;inset:0;background:linear-gradient(135deg,#165DFF,#722ED1);z-index:99999;display:grid;place-items:center}
+#layarLogin.sembunyi{display:none}
+.boxlogin{background:#fff;padding:32px;border-radius:18px;width:380px;box-shadow:0 30px 80px #0005}
+.boxlogin input,.boxlogin button{width:100%;padding:12px;margin:6px 0;border-radius:10px;border:1px solid #E5E8EF}
+.boxlogin button{background:#165DFF;color:#fff;border:none;font-weight:700;cursor:pointer}
+
+aside{background:var(--surface);border-right:1px solid var(--border);position:sticky;top:0;height:100vh;display:flex;flex-direction:column}
+.brand{padding:18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.brand .logo{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#D4A017,#FFB84D);color:#fff;display:grid;place-items:center}
+.menu{flex:1;padding:10px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.menu a{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;color:var(--text);text-decoration:none;font-size:13.5px}
+.menu a:hover{background:var(--bg)}
+.menu a.aktif{background:linear-gradient(90deg,rgba(212,160,23,.12),transparent);color:var(--emas);font-weight:700;border-left:3px solid var(--emas)}
+.menu .dilarang{opacity:.35;pointer-events:none}
+.tombol{padding:10px 14px;border:none;border-radius:10px;font-weight:600;cursor:pointer}
+.tombol.utama{background:var(--primary);color:#fff}.tombol.hijau{background:var(--success);color:#fff}
+.tombol.merah{background:var(--danger);color:#fff}.tombol.emas{background:var(--emas);color:#fff}
+.tombol.abu{background:var(--border);color:var(--text)}.tombol.rijek{background:var(--rijek);color:#fff}
+
+main{min-width:0}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50}
+.halaman{display:none;padding:22px 24px;animation:muncul .3s}
+.halaman.aktif{display:block}
+@keyframes muncul{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.kartu{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+.kartu h3{font-size:14px;margin-bottom:12px}
+.kartu-bank{background:linear-gradient(135deg,var(--w1),var(--w2));color:#fff;padding:18px;border-radius:16px;min-height:140px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:var(--card);position:relative;overflow:hidden}
+.kartu-bank::after{content:"";position:absolute;right:-30px;bottom:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.12)}
+.kartu-bank.biru{--w1:#165DFF;--w2:#2B7CFF}.kartu-bank.hijau{--w1:#00B42A;--w2:#36CF3C}
+.kartu-bank.merah{--w1:#F53F3F;--w2:#FF7A45}.kartu-bank.emas{--w1:#D4A017;--w2:#FFB84D}
+.kartu-bank.ungu{--w1:#722ED1;--w2:#9254DE}
+.nilai{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums}
+input,select{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:9px;background:var(--bg);color:var(--text);outline:none;font-size:13px}
+input:focus{border-color:var(--emas);box-shadow:0 0 0 3px #D4A01722}
+input:read-only{background:#E5E8EF55;color:var(--muted);cursor:not-allowed}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--border);text-align:left}
+th{color:var(--muted);font-size:11.5px;text-transform:uppercase}
+.masuk{color:var(--success);font-weight:700}.keluar{color:var(--danger);font-weight:700}
+.badge{padding:3px 8px;border-radius:999px;font-size:11px;font-weight:600}
+.badge.hijau{background:#00B42A1F;color:var(--success)}
+.badge.kuning{background:#FFB0201F;color:#D48500}
+.badge.merah{background:#F53F3F1F;color:var(--danger)}
+.badge.biru{background:#165DFF1F;color:#165DFF}
+.progress{height:10px;background:var(--border);border-radius:999px;overflow:hidden;margin:6px 0}
+.progress>div{height:100%;background:linear-gradient(90deg,#D4A017,#FFB84D);transition:.4s}
+.chart{position:relative;height:260px}
+
+.cabang-wrap{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+}
+.cabang-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px;
+    box-shadow:var(--shadow);
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-template-areas:
+        "judul judul"
+        "tahu  sotong";
+    gap:12px;
+    min-height:0;
+}
+.cabang-judul{
+    grid-area:judul;
+    font-weight:800;font-size:15px;
+    padding-bottom:8px;
+    border-bottom:1px dashed var(--border);
+    color:var(--text);
+    display:flex;align-items:center;gap:8px
+}
+.kolom-tahu{
+    grid-area:tahu;
+    background:#165DFF08;
+    border:1px solid #165DFF22;
+    border-radius:12px;
+    padding:10px;
+    display:grid;
+    grid-auto-rows:minmax(28px,auto);
+    gap:6px;
+    align-content:start;
+}
+.kolom-sotong{
+    grid-area:sotong;
+    background:#722ED108;
+    border:1px solid #722ED122;
+    border-radius:12px;
+    padding:10px;
+    display:grid;
+    grid-auto-rows:minmax(28px,auto);
+    gap:6px;
+    align-content:start;
+}
+.kepala{
+    text-align:center;
+    font-weight:800;
+    padding:6px;
+    border-radius:8px;
+    font-size:13px;
+    letter-spacing:.5px
+}
+.kolom-tahu  .kepala{background:#165DFF1A;color:#165DFF}
+.kolom-sotong .kepala{background:#722ED11A;color:#722ED1}
+
+.baris{
+    display:grid;
+    grid-template-columns:82px 1fr;
+    align-items:center;
+    gap:8px;
+    font-size:12.5px
+}
+.baris.hasil{background:var(--bg);padding:4px 8px;border-radius:8px}
+.baris.terjual{
+    background:linear-gradient(90deg,#165DFF15,#00B42A15);
+    padding:6px 8px;border-radius:8px;
+    font-weight:900;color:#0F172A;font-size:14px
+}
+.baris.rijek{background:#FFB0201A}
+.baris.baru {background:#00B42A12}
+.baris b.label{color:var(--muted);font-weight:600;font-size:12px}
+.baris b.angka{text-align:right;font-variant-numeric:tabular-nums}
+.over{color:#F53F3F;font-weight:900;background:#F53F3F15;padding:2px 6px;border-radius:6px}
+.rumus{font-size:11px;color:var(--muted);line-height:1.6;padding:8px 10px;background:var(--bg);border-radius:8px;border-left:3px solid var(--emas)}
+
+.pusat-card{background:linear-gradient(180deg,#FFB0200D,transparent);border:1px solid #FFB02055;border-radius:14px;padding:14px;box-shadow:var(--shadow)}
+.pusat-judul{font-weight:800;font-size:15px;margin-bottom:10px;color:var(--text);display:flex;align-items:center;gap:8px}
+.pusat-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+.pusat-kolom{display:grid;grid-auto-rows:minmax(28px,auto);gap:6px;align-content:start}
+.pusat-kolom.tahu   .kepala{background:#165DFF1A;color:#165DFF}
+.pusat-kolom.sotong .kepala{background:#722ED11A;color:#722ED1}
+
+@media(max-width:540px){
+    body{grid-template-columns:64px 1fr}
+    .menu a span,.brand h1{display:none}
+    .grid4,.grid3,.grid2{grid-template-columns:1fr}
+    .cabang-wrap{grid-template-columns:1fr}
+    .cabang-card,.pusat-grid{grid-template-columns:1fr;grid-template-areas:"judul""tahu""sotong"}
+}
+@media(min-width:541px) and (max-width:900px){
+    body{grid-template-columns:64px 1fr}
+    .menu a span,.brand h1{display:none}
+    .grid4{grid-template-columns:repeat(2,1fr)}
+    .grid3{grid-template-columns:1fr 1fr}
+    .cabang-wrap{grid-template-columns:1fr}
+    .cabang-card,.pusat-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<div id="layarLogin">
+    <div class="boxlogin">
+        <h2><i class="fa-solid fa-gem" style="color:#D4A017"></i> TAHU BANK</h2>
+        <p style="color:#666;font-size:12px;margin-bottom:10px">User = sandi : pemilik / manajer / keuangan / karyawan</p>
+        <input id="user" value="pemilik"><input id="pass" type="password" value="pemilik">
+        <button onclick="masuk()">MASUK SISTEM</button>
+    </div>
+</div>
+
+<aside>
+    <div class="brand"><div class="logo"><i class="fa-solid fa-gem"></i></div><div><h1 style="font-size:15px">TAHU BANK</h1><small style="color:var(--muted);font-size:10px">v7.3.1 · 2 Kolom FIX</small></div></div>
+    <nav class="menu" id="menu">
+        <a data-h="utama" class="aktif"><i class="fa-solid fa-gauge"></i><span>Dasbor Utama</span></a>
+        <a data-h="stok"><i class="fa-solid fa-boxes"></i><span>Stok Rijek & Baru</span></a>
+        <a data-h="jurnal"><i class="fa-solid fa-book"></i><span>Jurnal Transaksi</span></a>
+        <a data-h="kekayaan"><i class="fa-solid fa-gem" style="color:#D4A017"></i><span><b>💎 MANAJEMEN KEKAYAAN</b></span></a>
+        <a data-h="laporan"><i class="fa-solid fa-chart-line"></i><span>Laporan</span></a>
+        <a data-h="ai"><i class="fa-solid fa-brain"></i><span>AI Penasihat</span></a>
+        <a data-h="sistem" data-r="pemilik"><i class="fa-solid fa-database"></i><span>Sistem & Backup</span></a>
+    </nav>
+    <div style="padding:12px;border-top:1px solid var(--border)">
+        <button class="tombol abu" style="width:100%" onclick="document.documentElement.classList.toggle('dark')"><i class="fa-solid fa-moon"></i> Tema</button>
+        <button class="tombol abu" style="width:100%;margin-top:6px" onclick="keluar()"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button>
+    </div>
+</aside>
+
+<main>
+<header>
+    <div><h2 style="font-size:16px" id="jdl">Dasbor Utama</h2><small style="color:var(--muted)" id="tglnow"></small></div>
+    <div style="display:flex;align-items:center;gap:12px">
+        <div id="infouser" style="text-align:right;font-size:12px"><b>—</b><br><span style="color:var(--muted)">—</span></div>
+        <div class="logo" style="width:36px;height:36px;font-size:14px" id="ava">A</div>
+    </div>
+</header>
+
+<section id="h-utama" class="halaman aktif">
+    <div class="grid4">
+        <div class="kartu-bank biru"><div><div style="opacity:.85;font-size:12px">TOTAL TERJUAL</div><div class="nilai" id="jmlButir">0</div><small>butir</small></div><div style="font-size:11px;opacity:.8">@ Rp 250</div></div>
+        <div class="kartu-bank hijau"><div><div style="opacity:.85;font-size:12px">OMZET</div><div class="nilai" id="omzet">Rp 0</div></div><div style="font-size:11px;opacity:.8">250 × jumlah</div></div>
+        <div class="kartu-bank ungu"><div><div style="opacity:.85;font-size:12px">MODAL PABRIK</div><div class="nilai" id="modal">Rp 0</div></div><div style="font-size:11px;opacity:.8">@ Rp 230</div></div>
+        <div class="kartu-bank emas"><div><div style="opacity:.85;font-size:12px">✅ LABA BERSIH</div><div class="nilai" id="laba">Rp 0</div></div><div style="font-size:11px;opacity:.8">Rp 20 / butir PASTI</div></div>
+    </div>
+    <div class="grid2" style="margin-top:14px">
+        <div class="kartu"><h3>Arus Kas 30 Hari</h3><div class="chart"><canvas id="g1"></canvas></div></div>
+        <div class="kartu"><h3>📈 Pertumbuhan Tabungan</h3><div class="chart"><canvas id="g2"></canvas></div></div>
+    </div>
+    <div class="grid3" style="margin-top:14px">
+        <div class="kartu"><h3>💰 Pembagian Hari Ini</h3><div id="bagiHariIni"></div></div>
+        <div class="kartu"><h3>🏆 Top Cabang</h3><div id="topCbg"></div></div>
+        <div class="kartu"><h3>⚠️ Peringatan</h3><div id="peringatan"></div></div>
+    </div>
+</section>
+
+<section id="h-stok" class="halaman">
+    <div class="grid2">
+        <div class="kartu"><h3>⚙️ PENGATURAN HARGA PUSAT</h3>
+            <label>Harga Modal Dari Pabrik / butir</label><input type="number" id="hModal" value="230" oninput="simpanHarga()">
+            <label>Harga Jual Ke Pedagang / butir</label><input type="number" id="hJual" value="250" oninput="simpanHarga()">
+            <div style="margin-top:10px;padding:12px;background:#D4A0171A;border-radius:10px;text-align:center">
+                LABA PER BUTIR = <b style="font-size:22px;color:#D4A017" id="labaperbutir">Rp 20</b>
+            </div>
+        </div>
+        <div class="kartu"><h3>📊 REKAP SEMUA CABANG & GUDANG (LIVE)</h3>
+            <div id="rekapTotal" style="display:grid;gap:8px"></div>
+        </div>
+    </div>
+
+    <div class="pusat-card" style="margin-top:14px">
+        <h3 class="pusat-judul"><i class="fa-solid fa-warehouse" style="color:#FFB020"></i> 🏬 GUDANG PUSAT — SIKLUS OTOMATIS</h3>
+        <div class="rumus">🟡 <b>RIJEK</b> = Sisa gudang kemarin · 🟢 <b>BARU</b> = Dari Pabrik · ⚡ <b>SIAP KIRIM = RIJEK + BARU</b></div>
+        <div class="pusat-grid">
+            <div class="pusat-kolom tahu">
+                <div class="kepala">🍘 TAHU</div>
+                <div class="baris rijek"><b class="label">🟡 RIJEK</b><b class="angka"><input type="number" min="0" id="rj_tahu" oninput="ubahPusat(this)"></b></div>
+                <div class="baris baru"><b class="label">🟢 BARU</b><b class="angka"><input type="number" min="0" id="br_tahu" value="0" oninput="ubahPusat(this)"></b></div>
+                <div class="baris hasil"><b class="label">⚡ SIAP KIRIM</b><b class="angka" id="sk_tahu" style="color:#165DFF;font-weight:900">0</b></div>
+                <div class="baris"><b class="label">🚚 TERKIRIM</b><b class="angka" id="tk_tahu">0</b></div>
+                <div class="baris"><b class="label">📦 SISA GUDANG</b><b class="angka" id="sg_tahu">0</b></div>
+            </div>
+            <div class="pusat-kolom sotong">
+                <div class="kepala">🦑 SOTONG</div>
+                <div class="baris rijek"><b class="label">🟡 RIJEK</b><b class="angka"><input type="number" min="0" id="rj_sotong" oninput="ubahPusat(this)"></b></div>
+                <div class="baris baru"><b class="label">🟢 BARU</b><b class="angka"><input type="number" min="0" id="br_sotong" value="0" oninput="ubahPusat(this)"></b></div>
+                <div class="baris hasil"><b class="label">⚡ SIAP KIRIM</b><b class="angka" id="sk_sotong" style="color:#722ED1;font-weight:900">0</b></div>
+                <div class="baris"><b class="label">🚚 TERKIRIM</b><b class="angka" id="tk_sotong">0</b></div>
+                <div class="baris"><b class="label">📦 SISA GUDANG</b><b class="angka" id="sg_sotong">0</b></div>
+            </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+            <button class="tombol emas" onclick="simpanDistribusi()">💾 SIMPAN DATA HARI INI</button>
+            <button class="tombol utama" onclick="tutupHari()">🔒 TUTUP HARI → RIJEK BESOK OTOMATIS</button>
+        </div>
+        <div id="cekStok" style="margin-top:8px;font-size:12px;text-align:center"></div>
+    </div>
+
+    <div class="kartu" style="margin-top:14px">
+        <h3 style="margin-bottom:10px">🚚 DISTRIBUSI · 🍘 KIRI · 🦑 KANAN</h3>
+        <div class="rumus"><b>RUMUS</b> · SELISIH = Sisa−BS · BAGIAN BARU = Older−Rijek · ✅ <b>HASIL = (O−R) − (S−BS)</b></div>
+        <div id="cbg" class="cabang-wrap"></div>
+    </div>
+</section>
+
+<section id="h-jurnal" class="halaman">
+    <div class="kartu"><h3>Catat Pengeluaran / Pemasukan Lain</h3>
+    <div class="grid2">
+        <input type="date" id="tglTx"><select id="jnTx"><option value="KELUAR">PENGELUARAN / KELUAR</option><option value="MASUK">PEMASUKAN / MASUK</option></select>
+        <input type="number" id="nilTx" placeholder="Jumlah Rupiah"><input id="ketTx" placeholder="Keperluan…">
+    </div>
+    <button class="tombol utama" style="margin-top:8px" onclick="simpanTx()">Simpan Transaksi</button>
+    </div>
+    <div class="kartu" style="margin-top:12px"><h3>Buku Besar</h3><div style="overflow:auto"><table id="tb"><thead><tr><th>Tgl</th><th>Jenis</th><th>Uraian</th><th style="text-align:right">Masuk</th><th style="text-align:right">Keluar</th></tr></thead><tbody></tbody></table></div></div>
+</section>
+
+<section id="h-kekayaan" class="halaman">
+    <div class="grid4">
+        <div class="kartu-bank emas"><div><div style="opacity:.85;font-size:12px">💰 TABUNGAN</div><div class="nilai" id="totTab">Rp 0</div></div></div>
+        <div class="kartu-bank biru"><div><div style="opacity:.85;font-size:12px">📦 MODAL USAHA</div><div class="nilai" id="totMod">Rp 0</div></div></div>
+        <div class="kartu-bank hijau"><div><div style="opacity:.85;font-size:12px">🍔 PRIBADI</div><div class="nilai" id="totPri">Rp 0</div></div></div>
+        <div class="kartu-bank ungu"><div><div style="opacity:.85;font-size:12px">🚨 DANA DARURAT</div><div class="nilai" id="totDar">Rp 0</div></div></div>
+    </div>
+    <div class="grid2" style="margin-top:14px">
+        <div class="kartu"><h3>⚙️ PERSENTASE</h3>
+            <div class="grid2">
+                <div><label>Tabungan</label><input type="number" id="p1" min="0" max="100" value="40" oninput="cekPersen()"> %</div>
+                <div><label>Modal Putar</label><input type="number" id="p2" min="0" max="100" value="30" oninput="cekPersen()"> %</div>
+                <div><label>Pribadi</label><input type="number" id="p3" min="0" max="100" value="20" oninput="cekPersen()"> %</div>
+                <div><label>Dana Darurat</label><input type="number" id="p4" min="0" max="100" value="10" oninput="cekPersen()"> %</div>
+            </div>
+            <div id="infoPersen" style="margin-top:8px;font-size:12px"></div>
+            <button class="tombol emas" style="width:100%;margin-top:8px" onclick="simpanPersen()">💾 Terapkan</button>
+        </div>
+        <div class="kartu"><h3>🚨 BATAS PENGELUARAN</h3>
+            <div id="statusBatas" style="padding:12px;border-radius:10px;text-align:center;font-weight:700">—</div>
+            <div style="margin-top:8px">
+                <div style="display:flex;justify-content:space-between;font-size:12px"><span>Laba hari ini</span><b id="labaHari">Rp 0</b></div>
+                <div style="display:flex;justify-content:space-between;font-size:12px"><span>Batas maksimal</span><b id="batasPakai">Rp 0</b></div>
+                <div style="display:flex;justify-content:space-between;font-size:12px"><span>Sudah dipakai</span><b id="sudahPakai">Rp 0</b></div>
+                <div style="display:flex;justify-content:space-between;font-size:12px"><span>Sisa</span><b id="sisaPakai">Rp 0</b></div>
+                <div class="progress"><div id="barPakai" style="width:0%"></div></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="h-laporan" class="halaman">
+    <div class="grid2">
+        <div class="kartu"><h3>Laba Rugi Otomatis</h3><div id="labarugi"></div></div>
+        <div class="kartu"><h3>Perbandingan Cabang</h3><div class="chart"><canvas id="g3"></canvas></div></div>
+    </div>
+</section>
+
+<section id="h-ai" class="halaman">
+    <div class="kartu"><h3>🧠 AI PENASIHAT</h3><div id="aiJawab" style="background:var(--bg);padding:14px;border-radius:10px;white-space:pre-wrap;line-height:1.9"></div></div>
+</section>
+
+<section id="h-sistem" class="halaman">
+    <div class="grid2">
+        <div class="kartu"><h3>Backup</h3>
+            <button class="tombol hijau" onclick="ekspor()">📤 Ekspor</button>
+            <button class="tombol abu" onclick="document.getElementById('imp').click()">📥 Impor</button>
+            <input type="file" id="imp" hidden onchange="impor(event)">
+            <button class="tombol merah" onclick="if(confirm('Yakin hapus SEMUA?')){localStorage.clear();location.reload()}">⚠️ Reset</button>
+        </div>
+        <div class="kartu"><h3>Audit Log</h3><div id="log" style="max-height:360px;overflow:auto;font-family:monospace;font-size:11.5px;color:var(--muted)"></div></div>
+    </div>
+</section>
+</main>
+
+<script>
+const CABANG=['Kreo','Pondok Labu','Gandaria','Pondok Pinang','Kebon Jeruk','Maruya'];
+const DBKEY='tahu_bank_v7_3';
+const id=x=>document.getElementById(x);
+const angka=v=>Math.max(0,parseInt(v)||0);
+const uang=v=>'Rp '+angka(v).toLocaleString('id-ID');
+const tgl=()=>new Date().toISOString().slice(0,10);
+const wkt=()=>new Date().toLocaleString('id-ID');
+const hariIni=tgl();
+let SESI={};
+let DB={
+    pengguna:{pemilik:{sandi:'pemilik',role:'pemilik',nama:'Pemilik'},manajer:{sandi:'manajer',role:'manajer',nama:'Manajer'},keuangan:{sandi:'keuangan',role:'keuangan',nama:'Keuangan'},karyawan:{sandi:'karyawan',role:'karyawan',nama:'Karyawan'}},
+    harga:{modal:230,jual:250},persen:{tabungan:40,modal:30,pribadi:20,darurat:10},
+    pusat:{rijek:{tahu:0,sotong:0},baru:{tahu:0,sotong:0},terakhirTutup:''},
+    cabang:{},transaksi:[],harian:{},kekayaan:{tabungan:0,modal:0,pribadi:0,darurat:0},impian:[],log:[]
+};
+CABANG.forEach(c=>DB.cabang[c]={older_tahu:0,older_sotong:0,sisa_tahu:0,sisa_sotong:0,bs_tahu:0,bs_sotong:0,rijek_tahu:0,rijek_sotong:0});
+
+function hitungCabang(c){
+    const d=DB.cabang[c];
+    return{
+        selisih_tahu:d.sisa_tahu-d.bs_tahu,selisih_sotong:d.sisa_sotong-d.bs_sotong,
+        bagianBaru_tahu:d.older_tahu-d.rijek_tahu,bagianBaru_sotong:d.older_sotong-d.rijek_sotong,
+        hasil_tahu:Math.max(0,(d.older_tahu-d.rijek_tahu)-(d.sisa_tahu-d.bs_tahu)),
+        hasil_sotong:Math.max(0,(d.older_sotong-d.rijek_sotong)-(d.sisa_sotong-d.bs_sotong))
+    }
+}
+function totalTerjual(){return CABANG.reduce((s,c)=>{const h=hitungCabang(c);return s+h.hasil_tahu+h.hasil_sotong},0)}
+function totalKirim(){return CABANG.reduce((a,c)=>{a.tahu+=DB.cabang[c].older_tahu;a.sotong+=DB.cabang[c].older_sotong;return a},{tahu:0,sotong:0})}
+function stokPusat(){
+    const siap={tahu:DB.pusat.rijek.tahu+DB.pusat.baru.tahu,sotong:DB.pusat.rijek.sotong+DB.pusat.baru.sotong};
+    const kirim=totalKirim();
+    return{siap,kirim,sisa:{tahu:Math.max(0,siap.tahu-kirim.tahu),sotong:Math.max(0,siap.sotong-kirim.sotong)},cukup:{tahu:kirim.tahu<=siap.tahu,sotong:kirim.sotong<=siap.sotong}}
+}
+function muat(){
+    const s=localStorage.getItem(DBKEY);
+    if(s){const lama=JSON.parse(s);Object.assign(DB,lama);if(DB.pusat.terakhirTutup&&DB.pusat.terakhirTutup!==hariIni)gulingStokOtomatis()}
+    ['hModal','hJual'].forEach(x=>id(x).value=DB.harga[x.replace('h','').toLowerCase()]);
+    ['p1','p2','p3','p4'].forEach((x,i)=>id(x).value=[DB.persen.tabungan,DB.persen.modal,DB.persen.pribadi,DB.persen.darurat][i]);
+    id('tglnow').textContent=wkt();
+    const ss=sessionStorage.getItem('sesi');if(ss){SESI=JSON.parse(ss);berhasilMasuk()}
+    bangunCabang();buka('utama');refreshSemua();
+}
+function simpanDB(){localStorage.setItem(DBKEY,JSON.stringify(DB))}
+function audit(p){DB.log.unshift(`[${wkt()}] ${SESI.user||'sistem'}: ${p}`);if(DB.log.length>300)DB.log.pop();if(id('log'))id('log').innerHTML=DB.log.map(l=>`<div>${l}</div>`).join('');simpanDB()}
+function ekspor(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(DB,null,2)],{type:'application/json'}));a.download=`tahu-bank-${tgl()}.json`;a.click()}
+function impor(e){const r=new FileReader();r.onload=ev=>{DB=JSON.parse(ev.target.result);simpanDB();location.reload()};r.readAsText(e.target.files[0])}
+function masuk(){const u=id('user').value,p=id('pass').value;if(DB.pengguna[u]&&DB.pengguna[u].sandi===p){SESI={user:u,role:DB.pengguna[u].role,nama:DB.pengguna[u].nama};sessionStorage.setItem('sesi',JSON.stringify(SESI));berhasilMasuk()}else alert('Salah')}
+function berhasilMasuk(){id('layarLogin').classList.add('sembunyi');id('infouser').innerHTML=`<b>${SESI.nama}</b><br><span style="color:var(--muted)">${SESI.role.toUpperCase()}</span>`;id('ava').textContent=SESI.nama.charAt(0);document.querySelectorAll('.menu a').forEach(a=>{const r=a.dataset.r;if(r&&!r.includes(SESI.role))a.classList.add('dilarang');a.onclick=()=>{if(!a.classList.contains('dilarang'))buka(a.dataset.h)}})}
+function keluar(){sessionStorage.removeItem('sesi');location.reload()}
+function buka(n){
+    document.querySelectorAll('.halaman').forEach(h=>h.classList.remove('aktif'));
+    document.querySelectorAll('.menu a').forEach(a=>a.classList.toggle('aktif',a.dataset.h===n));
+    id('h-'+n).classList.add('aktif');
+    const J={utama:'Dasbor',stok:'Stok Rijek & Baru',jurnal:'Jurnal',kekayaan:'💎 Manajemen Kekayaan',laporan:'Laporan',ai:'AI Penasihat',sistem:'Sistem'};
+    id('jdl').textContent=J[n];
+    setTimeout(()=>{if(n==='utama')gambarUtama();if(n==='stok')refreshSemua();if(n==='jurnal')tampilJurnal();if(n==='kekayaan')bukaKekayaan();if(n==='laporan')gambarLaporan();if(n==='ai')aiFull()},50);
+}
+function simpanHarga(){DB.harga.modal=angka(id('hModal').value);DB.harga.jual=angka(id('hJual').value);id('labaperbutir').textContent=uang(DB.harga.jual-DB.harga.modal);simpanDB();refreshSemua()}
+function ubahPusat(el){const f=el.id;if(f==='rj_tahu')DB.pusat.rijek.tahu=angka(el.value);if(f==='rj_sotong')DB.pusat.rijek.sotong=angka(el.value);if(f==='br_tahu')DB.pusat.baru.tahu=angka(el.value);if(f==='br_sotong')DB.pusat.baru.sotong=angka(el.value);simpanDB();refreshSemua()}
+function gulingStokOtomatis(){const sp=stokPusat();DB.pusat.rijek={tahu:sp.sisa.tahu,sotong:sp.sisa.sotong};DB.pusat.baru={tahu:0,sotong:0};CABANG.forEach(c=>DB.cabang[c]={older_tahu:0,older_sotong:0,sisa_tahu:0,sisa_sotong:0,bs_tahu:0,bs_sotong:0,rijek_tahu:0,rijek_sotong:0});DB.pusat.terakhirTutup=hariIni;simpanDB()}
+function tutupHari(){const sp=stokPusat();if(!confirm(`🔒 TUTUP HARI ${hariIni} ?\nSisa T=${sp.sisa.tahu} S=${sp.sisa.sotong}`))return;gulingStokOtomatis();bangunCabang();refreshSemua();audit('TUTUP HARI');alert('✅ Hari ditutup')}
+
+function bangunCabang(){
+    id('cbg').innerHTML=CABANG.map((c,idx)=>{
+        const d=DB.cabang[c];
+        return `
+        <div class="cabang-card" data-cabang="${c}">
+            <div class="cabang-judul"><i class="fa-solid fa-location-dot" style="color:#F53F3F"></i> ${idx+1}. ${c}</div>
+            <div class="kolom-tahu">
+                <div class="kepala">🍘 TAHU</div>
+                <div class="baris"><b class="label">🚚 Older</b><input type="number" min="0" value="${d.older_tahu}" data-c="${c}" data-f="older_tahu" oninput="ubah(this)"></div>
+                <div class="baris"><b class="label">📦 Sisa</b> <input type="number" min="0" value="${d.sisa_tahu}"  data-c="${c}" data-f="sisa_tahu"  oninput="ubah(this)"></div>
+                <div class="baris"><b class="label">🗑️ BS</b>   <input type="number" min="0" value="${d.bs_tahu}"    data-c="${c}" data-f="bs_tahu"    oninput="ubah(this)"></div>
+                <div class="baris rijek"><b class="label">🟡 Rijek</b><input type="number" min="0" value="${d.rijek_tahu}" data-c="${c}" data-f="rijek_tahu" oninput="ubah(this)"></div>
+                <div class="baris hasil"><b class="label">S−BS</b><b class="angka" id="sel_${c}">0</b></div>
+                <div class="baris hasil"><b class="label">O−R</b> <b class="angka" id="bbr_${c}">0</b></div>
+                <div class="baris terjual"><b class="label">✅ HASIL</b><b class="angka" id="ht_${c}" style="color:#165DFF">0</b></div>
+            </div>
+            <div class="kolom-sotong">
+                <div class="kepala">🦑 SOTONG</div>
+                <div class="baris"><b class="label">🚚 Older</b><input type="number" min="0" value="${d.older_sotong}" data-c="${c}" data-f="older_sotong" oninput="ubah(this)"></div>
+                <div class="baris"><b class="label">📦 Sisa</b> <input type="number" min="0" value="${d.sisa_sotong}"  data-c="${c}" data-f="sisa_sotong"  oninput="ubah(this)"></div>
+                <div class="baris"><b class="label">🗑️ BS</b>   <input type="number" min="0" value="${d.bs_sotong}"    data-c="${c}" data-f="bs_sotong"    oninput="ubah(this)"></div>
+                <div class="baris rijek"><b class="label">🟡 Rijek</b><input type="number" min="0" value="${d.rijek_sotong}" data-c="${c}" data-f="rijek_sotong" oninput="ubah(this)"></div>
+                <div class="baris hasil"><b class="label">S−BS</b><b class="angka" id="sels_${c}">0</b></div>
+                <div class="baris hasil"><b class="label">O−R</b> <b class="angka" id="bbrs_${c}">0</b></div>
+                <div class="baris terjual"><b class="label">✅ HASIL</b><b class="angka" id="hts_${c}" style="color:#722ED1">0</b></div>
+            </div>
+        </div>`;
+    }).join('');
+    refreshSemua();
+}
+function ubah(el){DB.cabang[el.dataset.c][el.dataset.f]=angka(el.value);simpanDB();refreshSemua()}
+function refreshSemua(){
+    id('rj_tahu').value=DB.pusat.rijek.tahu;id('rj_sotong').value=DB.pusat.rijek.sotong;
+    id('br_tahu').value=DB.pusat.baru.tahu;id('br_sotong').value=DB.pusat.baru.sotong;
+    const sp=stokPusat();
+    id('sk_tahu').textContent=sp.siap.tahu.toLocaleString('id-ID');
+    id('sk_sotong').textContent=sp.siap.sotong.toLocaleString('id-ID');
+    id('tk_tahu').textContent=sp.kirim.tahu.toLocaleString('id-ID')+(sp.cukup.tahu?'':` ⚠️ LEBIH ${(sp.kirim.tahu-sp.siap.tahu).toLocaleString('id-ID')}`);
+    id('tk_sotong').textContent=sp.kirim.sotong.toLocaleString('id-ID')+(sp.cukup.sotong?'':` ⚠️ LEBIH ${(sp.kirim.sotong-sp.siap.sotong).toLocaleString('id-ID')}`);
+    id('tk_tahu').classList.toggle('over',!sp.cukup.tahu);id('tk_sotong').classList.toggle('over',!sp.cukup.sotong);
+    id('sg_tahu').textContent=sp.sisa.tahu.toLocaleString('id-ID');id('sg_sotong').textContent=sp.sisa.sotong.toLocaleString('id-ID');
+    id('cekStok').innerHTML=sp.cukup.tahu&&sp.cukup.sotong?`<span class="badge hijau">✅ STOK CUKUP</span>`:`<span class="badge merah">❌ KIRIM MELEBIHI STOK</span>`;
+    CABANG.forEach(c=>{
+        const h=hitungCabang(c);
+        id('sel_'+c).textContent=h.selisih_tahu.toLocaleString('id-ID');
+        id('sels_'+c).textContent=h.selisih_sotong.toLocaleString('id-ID');
+        id('bbr_'+c).textContent=h.bagianBaru_tahu.toLocaleString('id-ID');
+        id('bbrs_'+c).textContent=h.bagianBaru_sotong.toLocaleString('id-ID');
+        id('ht_'+c).textContent=h.hasil_tahu.toLocaleString('id-ID');
+        id('hts_'+c).textContent=h.hasil_sotong.toLocaleString('id-ID');
+    });
+    const jml=totalTerjual(),h=DB.harga;
+    id('jmlButir').textContent=jml.toLocaleString('id-ID');
+    id('omzet').textContent=uang(jml*h.jual);
+    id('modal').textContent=uang(jml*h.modal);
+    id('laba').textContent=uang(jml*(h.jual-h.modal));
+    id('labaperbutir').textContent=uang(h.jual-h.modal);
+}
+function simpanDistribusi(){
+    const sp=stokPusat();if(!sp.cukup.tahu||!sp.cukup.sotong){alert('❌ Kirim melebihi stok');return}
+    const jml=totalTerjual(),laba=jml*(DB.harga.jual-DB.harga.modal);
+    if(!DB.harian[hariIni])DB.harian[hariIni]={terjual:0,omzet:0,modal:0,laba:0,pengeluaran:0};
+    DB.harian[hariIni]={terjual:jml,omzet:jml*DB.harga.jual,modal:jml*DB.harga.modal,laba,pengeluaran:DB.harian[hariIni].pengeluaran||0};
+    DB.kekayaan.tabungan+=Math.round(laba*DB.persen.tabungan/100);
+    DB.kekayaan.modal+=Math.round(laba*DB.persen.modal/100);
+    DB.kekayaan.pribadi+=Math.round(laba*DB.persen.pribadi/100);
+    DB.kekayaan.darurat+=Math.round(laba*DB.persen.darurat/100);
+    DB.pusat.terakhirTutup=hariIni;simpanDB();refreshSemua();audit(`distribusi ${jml} butir · laba ${uang(laba)}`);
+    alert(`✅ DISIMPAN\nTerjual ${jml} butir\nLaba ${uang(laba)}`)
+}
+function cekPersen(){const t=[1,2,3,4].reduce((a,i)=>a+angka(id('p'+i).value),0);const el=id('infoPersen');el.textContent=t===100?'✅ 100%':t>100?`❌ LEBIH ${t-100}%`:`⚠️ Kurang ${100-t}%`;el.style.color=t===100?'#00B42A':t>100?'#F53F3F':'#FF7D00'}
+function simpanPersen(){const t=[1,2,3,4].reduce((a,i)=>a+angka(id('p'+i).value),0);if(t!==100){alert('Harus 100%');return}DB.persen={tabungan:angka(id('p1').value),modal:angka(id('p2').value),pribadi:angka(id('p3').value),darurat:angka(id('p4').value)};simpanDB()}
+function simpanTx(){
+    const jns=id('jnTx').value,nil=angka(id('nilTx').value),ket=id('ketTx').value||'-';
+    if(jns==='KELUAR'){if(!DB.harian[hariIni])DB.harian[hariIni]={terjual:0,omzet:0,modal:0,laba:0,pengeluaran:0};DB.harian[hariIni].pengeluaran+=nil}
+    DB.transaksi.unshift({id:'TX'+Date.now(),tgl:id('tglTx').value||hariIni,jenis:jns,nilai:nil,ket,oleh:SESI.user||'-'});
+    simpanDB();tampilJurnal();refreshSemua();id('nilTx').value='';id('ketTx').value=''
+}
+function tampilJurnal(){id('tb').querySelector('tbody').innerHTML=DB.transaksi.slice(0,100).map(t=>`<tr><td>${t.tgl}</td><td><span class="badge ${t.jenis==='MASUK'?'hijau':'merah'}">${t.jenis}</span></td><td>${t.ket}</td><td style="text-align:right" class="masuk">${t.jenis==='MASUK'?uang(t.nilai):''}</td><td style="text-align:right" class="keluar">${t.jenis==='KELUAR'?uang(t.nilai):''}</td></tr>`).join('')||`<tr><td colspan="5" style="text-align:center;color:var(--muted)">Belum ada</td></tr>`}
+function bukaKekayaan(){
+    const b=(()=>{const h=DB.harian[hariIni]||{laba:0,pengeluaran:0};const batas=Math.round(h.laba*DB.persen.pribadi/100),pakai=h.pengeluaran||0;return{laba:h.laba,batas,pakai,sisa:Math.max(0,batas-pakai),persen:batas?Math.min(100,(pakai/batas)*100):0}})();
+    const st=b.persen<=60?{cls:'hijau',teks:'🟢 AMAN',warna:'#00B42A'}:b.persen<=85?{cls:'kuning',teks:'🟡 HATI‑HATI',warna:'#FF7D00'}:{cls:'merah',teks:'🔴 BAHAYA',warna:'#F53F3F'};
+    id('totTab').textContent=uang(DB.kekayaan.tabungan);id('totMod').textContent=uang(DB.kekayaan.modal);id('totPri').textContent=uang(DB.kekayaan.pribadi);id('totDar').textContent=uang(DB.kekayaan.darurat);
+    id('statusBatas').innerHTML=st.teks;id('statusBatas').style.background=st.warna+'22';id('statusBatas').style.color=st.warna;
+    id('labaHari').textContent=uang(b.laba);id('batasPakai').textContent=uang(b.batas);id('sudahPakai').textContent=uang(b.pakai);id('sisaPakai').textContent=uang(b.sisa);id('barPakai').style.width=b.persen+'%';id('barPakai').style.background=st.warna
+}
+let G={};
+function hari30(){const o={};for(let i=29;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);o[d.toISOString().slice(0,10)]={laba:0,keluar:0}}Object.entries(DB.harian).forEach(([t,h])=>{if(o[t]!==undefined){o[t].laba=h.laba;o[t].keluar=h.pengeluaran||0}});return o}
+function gambarUtama(){
+    const d=hari30(),lbl=Object.keys(d),lb=Object.values(d).map(x=>x.laba),kl=Object.values(d).map(x=>x.keluar);
+    buatGrafik('g1','line',lbl,[{n:'Laba',v:lb,c:'#D4A017'},{n:'Keluar',v:kl,c:'#F53F3F'}]);
+    let ak=0;const t=Object.keys(DB.harian).sort(),akm=t.map(k=>ak+=DB.harian[k].laba*(DB.persen.tabungan/100));
+    buatGrafik('g2','line',t.length?t:['-'],[{n:'Tabungan',v:akm.length?akm:[0],c:'#165DFF',isi:true}]);
+}
+function gambarLaporan(){buatGrafik('g3','bar',CABANG,[{n:'Laba',v:CABANG.map(c=>{const x=hitungCabang(c);return(x.hasil_tahu+x.hasil_sotong)*(DB.harga.jual-DB.harga.modal)}),c:'#D4A017'}])}
+function buatGrafik(id,tipe,label,data){if(G[id])G[id].destroy();G[id]=new Chart(id,{type:tipe,data:{labels:label,datasets:data.map(x=>({label:x.n,data:x.v,borderColor:x.c,backgroundColor:x.c+'33',fill:x.isi??false,tension:.4,borderWidth:2}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:getComputedStyle(document.documentElement).getPropertyValue('--text').trim()||'#0F172A'}}},scales:{x:{ticks:{color:'#888'}},y:{ticks:{color:'#888'},grid:{color:'#22222222'}}}}})}
+function aiFull(){const jml=totalTerjual(),lb=jml*(DB.harga.jual-DB.harga.modal),rr=Object.values(DB.harian).map(x=>x.laba).filter(x=>x>0);const r=rr.length?rr.reduce((a,b)=>a+b,0)/rr.length:0;id('aiJawab').textContent=`🤖 ${wkt()}\n\nTerjual ${jml} butir → Laba ${uang(lb)}\nRata‑rata ${uang(r)}/hari`}
+muat();
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="in">
+<head>
+    <meta charset="UTF-8">
+    <title>Judul halaman</title>
+</head>
+<body>
+    
